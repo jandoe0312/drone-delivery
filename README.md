@@ -24,6 +24,7 @@ A Spring Boot application for managing drone-based medication deliveries.
 2. Open in IntelliJ IDEA
 3. Run `DroneDeliveryApplication.java`
 4. Access APIs via Postman or Swagger
+   -http://localhost:8080/swagger-ui/index.html#/
 ## API Documentation
 ### REST Endpoints
 #### 1. Register Drone
