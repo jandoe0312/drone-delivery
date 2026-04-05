@@ -9,11 +9,17 @@ public class Medication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Pattern(regexp = "^[A-Za-z0-9_-]+$")
     private String name;
+
+    @Min(0)
     private int weight;
+
     @Pattern(regexp = "^[A-Z0-9_]+$")
     private String code;
+
     @Lob
     private byte[] image;
+
 }

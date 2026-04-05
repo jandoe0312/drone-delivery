@@ -13,7 +13,6 @@ import com.drone.delivery.drones.repository.DroneRepository;
 import com.drone.delivery.drones.repository.MedicationRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 @Service
@@ -50,6 +49,10 @@ public class DroneService {
         if (drone.getState() != DroneState.IDLE && drone.getState() != DroneState.LOADING) {
             throw new BadRequestException("Drone must be IDLE or LOADING to load medication");
         }
+        Integer currentTotalWeight = droneLoadRepository.findTotalWeightByDroneId(droneId);
+        if (currentTotalWeight == null) {
+            currentTotalWeight = 0;
+        }
         Medication medication = medicationRepository.findById(medicationId)
                 .orElseThrow(() -> new BadRequestException("Medication not found"));
         // Calculate current load
@@ -57,7 +60,7 @@ public class DroneService {
                 .stream()
                 .map(dl -> dl.getMedication().getWeight())
                 .reduce(0, Integer::sum);
-        if (currentLoad + medication.getWeight() > drone.getWeightLimit()) {
+        if (currentTotalWeight + medication.getWeight() > drone.getWeightLimit()) {
             throw new OverweightException("Cannot load medication: weight limit exceeded");
         }
         // Save load
@@ -75,6 +78,7 @@ public class DroneService {
         droneRepository.save(drone);
         return "Medication loaded successfully";
     }
+
     public List<DroneLoadResponse> getLoadedMedications(Long droneId) {
         return droneLoadRepository.findByDroneId(droneId)
                 .stream()
@@ -87,7 +91,7 @@ public class DroneService {
                     res.setWeight(dl.getMedication().getWeight());
                     return res;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
     public List<DroneResponse> getAvailableDrones() {
         return droneRepository.findByState(DroneState.IDLE)
@@ -102,7 +106,7 @@ public class DroneService {
                     res.setWeightLimit(d.getWeightLimit());
                     return res;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
     public int checkBattery(Long droneId) {
         return droneRepository.findById(droneId)
